@@ -5,9 +5,13 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
+const routes = require('./routes');
 
 // Initialize Express app
 const app = express();
+
+app.use(express.json());
+
 
 // Middleware
 app.use(cors({
@@ -150,6 +154,12 @@ app.get('/protected', isAuthenticated, (req, res) => {
     }
   });
 });
+
+
+
+
+app.use('/', routes);
+
 
 // Start server
 const PORT = process.env.PORT || 3000;

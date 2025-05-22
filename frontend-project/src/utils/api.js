@@ -1,7 +1,7 @@
-const API_URL = 'http://localhost:3000/auth';
+const API_URL = 'http://localhost:3000/';
 
 export const register = async (userData) => {
-  const response = await fetch(`${API_URL}/register`, {
+  const response = await fetch(`${API_URL}auth/register`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -13,7 +13,7 @@ export const register = async (userData) => {
 };
 
 export const login = async (userData) => {
-  const response = await fetch(`${API_URL}/login`, {
+  const response = await fetch(`${API_URL}auth/login`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -25,7 +25,7 @@ export const login = async (userData) => {
 };
 
 export const logout = async () => {
-  const response = await fetch(`${API_URL}/logout`, {
+  const response = await fetch(`${API_URL}auth/logout`, {
     method: 'POST',
     credentials: 'include',
   });
@@ -33,7 +33,7 @@ export const logout = async () => {
 };
 
 export const checkAuth = async () => {
-  const response = await fetch(`${API_URL}/check-auth`, {
+  const response = await fetch(`${API_URL}auth/check-auth`, {
     credentials: 'include',
   });
   return response.json();

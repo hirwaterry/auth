@@ -4,8 +4,8 @@ const packageSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'Package name is required'],
-    trim: true,
-    enum: ['Basic wash', 'Classic wash', 'Premium wash']
+    
+    
   },
   description: {
     type: String,

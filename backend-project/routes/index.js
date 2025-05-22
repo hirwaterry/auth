@@ -5,17 +5,15 @@ const Package = require('../models/Package');
 const Payment = require('../models/Payment');
 const ServicePackage = require('../models/ServicePackage');
 
-// Helper function for error handling
+
 const handleErrors = (res, err) => {
   console.error(err);
   res.status(500).json({ error: 'Server error' });
 };
 
-// ======================
-// CAR ROUTES
-// ======================
 
-// Create a new car
+
+
 router.post('/cars', async (req, res) => {
   try {
     const newCar = new Car(req.body);
@@ -29,7 +27,7 @@ router.post('/cars', async (req, res) => {
   }
 });
 
-// Get all cars
+
 router.get('/cars', async (req, res) => {
   try {
     const cars = await Car.find().sort({ createdAt: -1 });
@@ -39,7 +37,7 @@ router.get('/cars', async (req, res) => {
   }
 });
 
-// Get a single car by plate number
+
 router.get('/cars/:plateNumber', async (req, res) => {
   try {
     const car = await Car.findOne({ plateNumber: req.params.plateNumber.toUpperCase() });
@@ -52,11 +50,9 @@ router.get('/cars/:plateNumber', async (req, res) => {
   }
 });
 
-// ======================
-// PACKAGE ROUTES
-// ======================
 
-// Get all packages
+
+
 router.get('/packages', async (req, res) => {
   try {
     const packages = await Package.find().sort({ price: 1 });
@@ -66,7 +62,20 @@ router.get('/packages', async (req, res) => {
   }
 });
 
-// Get a single package
+router.post('/packages', async (req, res) => {
+  try {
+    const pkg = req.body;
+    
+    if (!pkg.name || !pkg.description || typeof pkg.price !== 'number') {
+      return res.status(400).json({ error: 'Missing required fields: name, description, price' });
+    }
+    const createdPackage = await Package.create(pkg);
+    res.status(201).json(createdPackage);
+  } catch (err) {
+    handleErrors(res, err);
+  }
+});
+
 router.get('/packages/:id', async (req, res) => {
   try {
     const package = await Package.findById(req.params.id);
@@ -79,11 +88,8 @@ router.get('/packages/:id', async (req, res) => {
   }
 });
 
-// ======================
-// PAYMENT ROUTES
-// ======================
 
-// Create a new payment
+
 router.post('/payments', async (req, res) => {
   try {
     const newPayment = new Payment(req.body);
@@ -94,7 +100,7 @@ router.post('/payments', async (req, res) => {
   }
 });
 
-// Get payment by ID
+
 router.get('/payments/:id', async (req, res) => {
   try {
     const payment = await Payment.findById(req.params.id);
@@ -107,33 +113,31 @@ router.get('/payments/:id', async (req, res) => {
   }
 });
 
-// ======================
-// SERVICE PACKAGE ROUTES
-// ======================
 
-// Create a new service package (full transaction)
+
+
 router.post('/services', async (req, res) => {
   try {
-    // 1. Verify car exists
+    
     const car = await Car.findById(req.body.carId);
     if (!car) {
       return res.status(404).json({ error: 'Car not found' });
     }
 
-    // 2. Verify package exists
+    
     const package = await Package.findById(req.body.packageId);
     if (!package) {
       return res.status(404).json({ error: 'Package not found' });
     }
 
-    // 3. Create payment
+    
     const newPayment = new Payment({
       amountPaid: package.price,
       paymentMethod: req.body.paymentMethod || 'Cash'
     });
     const savedPayment = await newPayment.save();
 
-    // 4. Create service package
+    
     const newService = new ServicePackage({
       car: car._id,
       package: package._id,
@@ -142,7 +146,7 @@ router.post('/services', async (req, res) => {
     });
     const savedService = await newService.save();
 
-    // 5. Populate all references for the response
+    
     const result = await ServicePackage.findById(savedService._id)
       .populate('car')
       .populate('package')
@@ -154,7 +158,7 @@ router.post('/services', async (req, res) => {
   }
 });
 
-// Get all service packages with populated data
+
 router.get('/services', async (req, res) => {
   try {
     const services = await ServicePackage.find()
@@ -168,7 +172,7 @@ router.get('/services', async (req, res) => {
   }
 });
 
-// Get a single service package
+
 router.get('/services/:id', async (req, res) => {
   try {
     const service = await ServicePackage.findById(req.params.id)
@@ -185,7 +189,7 @@ router.get('/services/:id', async (req, res) => {
   }
 });
 
-// Update service package (only status as per requirements)
+
 router.put('/services/:id', async (req, res) => {
   try {
     const updatedService = await ServicePackage.findByIdAndUpdate(
@@ -203,7 +207,7 @@ router.put('/services/:id', async (req, res) => {
   }
 });
 
-// Delete service package
+
 router.delete('/services/:id', async (req, res) => {
   try {
     const deletedService = await ServicePackage.findByIdAndDelete(req.params.id);
@@ -211,7 +215,7 @@ router.delete('/services/:id', async (req, res) => {
       return res.status(404).json({ error: 'Service not found' });
     }
     
-    // Also delete the associated payment
+    
     await Payment.findByIdAndDelete(deletedService.payment);
     
     res.json({ message: 'Service and associated payment deleted' });
@@ -220,11 +224,8 @@ router.delete('/services/:id', async (req, res) => {
   }
 });
 
-// ======================
-// REPORT ROUTES
-// ======================
 
-// Get daily report
+
 router.get('/reports/daily', async (req, res) => {
   try {
     const { date } = req.query;
@@ -256,7 +257,7 @@ router.get('/reports/daily', async (req, res) => {
   }
 });
 
-// Generate invoice/bill
+
 router.get('/services/:id/invoice', async (req, res) => {
   try {
     const service = await ServicePackage.findById(req.params.id)
@@ -294,5 +295,8 @@ router.get('/services/:id/invoice', async (req, res) => {
     handleErrors(res, err);
   }
 });
+
+
+
 
 module.exports = router;
